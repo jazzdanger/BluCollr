@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BluCollr — AI-Powered Quoting Portal for Trade Contractors</title>
+  <meta name="description" content="Upload photos of broken parts and record voice notes. Our AI identifies hardware with computer vision and generates structured, itemized quotes instantly." />
+  <meta name="keywords" content="trade quoting, contractor quoting, AI quoting, YOLO part identification, voice-to-text quotes, blue collar technology" />
+
+  <!-- Google Font: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS v3 Play CDN with Typography plugin -->
+  <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        fontFamily: {
+          sans: ['Inter', 'system-ui', 'sans-serif'],
+        },
+        extend: {
+          colors: {
+            charcoal: {
+              900: '#111118',
+              950: '#09090e',
+            },
+          },
+          animation: {
+            'float': 'float 6s ease-in-out infinite',
+            'float-delayed': 'float 6s ease-in-out 2s infinite',
+            'pulse-glow': 'pulse-glow 3s ease-in-out infinite',
+            'slide-up': 'slide-up 0.6s ease-out forwards',
+          },
+          keyframes: {
+            'float': {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(-16px)' },
+            },
+            'pulse-glow': {
+              '0%, 100%': { boxShadow: '0 0 20px rgba(99, 102, 241, 0.15)' },
+              '50%': { boxShadow: '0 0 40px rgba(99, 102, 241, 0.3)' },
+            },
+            'slide-up': {
+              '0%': { opacity: '0', transform: 'translateY(40px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+          },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    .glass {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-strong {
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .gradient-text {
+      background: linear-gradient(135deg, #60a5fa, #3b82f6, #2563eb);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .gradient-text-orange {
+      background: linear-gradient(135deg, #f97316, #fb923c, #fdba74);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-grid {
+      background-image:
+        linear-gradient(rgba(99, 102, 241, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(99, 102, 241, 0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+    .glow-card:hover {
+      box-shadow: 0 0 30px rgba(99, 102, 241, 0.15), 0 0 60px rgba(99, 102, 241, 0.05);
+      border-color: rgba(99, 102, 241, 0.3);
+    }
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .reveal.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .stat-counter { font-variant-numeric: tabular-nums; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #111118; }
+    ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+    .bbox { animation: bbox-appear 0.5s ease-out forwards; opacity: 0; }
+    .bbox.visible { opacity: 1; }
+    @keyframes bbox-appear {
+      from { opacity: 0; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .quote-row { opacity: 0; transform: translateX(-20px); transition: all 0.4s ease; }
+    .quote-row.visible { opacity: 1; transform: translateX(0); }
+    .mobile-menu { transform: translateX(100%); transition: transform 0.3s ease; }
+    .mobile-menu.open { transform: translateX(0); }
+    .prose-custom h2 { color: #e4e4e7 !important; }
+    .prose-custom p { color: #a1a1aa !important; }
+    .prose-custom strong { color: #818cf8 !important; }
+  </style>
+</head>
+
+<body class="bg-charcoal-950 text-zinc-400 font-sans antialiased overflow-x-hidden">
+
+  <!-- ===== HEADER + NAVIGATION ===== -->
+  <header id="header" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
+    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 lg:h-20">
+        <!-- Logo -->
+        <a href="#home" id="nav-logo" class="flex items-center gap-2.5 group">
+          <img src="images/logo.png" alt="BluCollr Logo" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-shadow object-cover" />
+          <div>
+            <span class="text-lg sm:text-xl font-bold text-white">Blu<span class="gradient-text">Collr</span></span>
+            <span class="text-[9px] sm:text-[10px] font-semibold text-blue-400 block -mt-1 tracking-[0.2em] uppercase">AI-Powered</span>
+          </div>
+        </a>
+
+        <!-- Desktop Nav -->
+        <div class="hidden lg:flex items-center gap-1">
+          <a href="#home" class="nav-link px-4 py-2 text-sm font-medium text-zinc-400 hover:text-white rounded-lg hover:bg-white/5 transition-all">Home</a>
+          <a href="#how-it-works" class="nav-link px-4 py-2 text-sm font-medium text-zinc-400 hover:text-white rounded-lg hover:bg-white/5 transition-all">How It Works</a>
+          <a href="#features" class="nav-link px-4 py-2 text-sm font-medium text-zinc-400 hover:text-white rounded-lg hover:bg-white/5 transition-all">Features</a>
+          <a href="#technicians" class="nav-link px-4 py-2 text-sm font-medium text-zinc-400 hover:text-white rounded-lg hover:bg-white/5 transition-all">Technicians</a>
+          <a href="#estimators" class="nav-link px-4 py-2 text-sm font-medium text-zinc-400 hover:text-white rounded-lg hover:bg-white/5 transition-all">Estimators</a>
+          <a href="#contact" class="nav-link px-4 py-2 text-sm font-medium text-zinc-400 hover:text-white rounded-lg hover:bg-white/5 transition-all">Contact</a>
+        </div>
+
+        <!-- Desktop CTA -->
+        <div class="hidden lg:flex items-center">
+          <a href="#demo" id="nav-cta" class="px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl hover:from-blue-400 hover:to-blue-500 transition-all shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:-translate-y-0.5">
+            Start Quoting
+          </a>
+        </div>
+
+        <!-- Mobile Menu Button -->
+        <button id="mobile-menu-btn" class="lg:hidden p-2.5 -mr-2 text-zinc-400 hover:text-white transition-colors" aria-label="Open navigation menu">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Mobile Overlay -->
+    <div id="mobile-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden lg:hidden"></div>
+
+    <!-- Mobile Slide-in -->
+    <div id="mobile-menu" class="mobile-menu fixed top-0 right-0 h-full w-[280px] bg-zinc-900/95 backdrop-blur-xl border-l border-white/10 z-50 lg:hidden">
+      <div class="flex items-center justify-between p-4 border-b border-white/10">
+        <span class="text-lg font-bold text-white">Menu</span>
+        <button id="mobile-menu-close" class="p-2.5 text-zinc-400 hover:text-white" aria-label="Close navigation menu">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div class="flex flex-col p-4 gap-1">
+        <a href="#home" class="mobile-nav-link px-4 py-3.5 text-zinc-300 hover:text-white hover:bg-white/5 rounded-lg transition-all text-base">Home</a>
+        <a href="#how-it-works" class="mobile-nav-link px-4 py-3.5 text-zinc-300 hover:text-white hover:bg-white/5 rounded-lg transition-all text-base">How It Works</a>
+        <a href="#features" class="mobile-nav-link px-4 py-3.5 text-zinc-300 hover:text-white hover:bg-white/5 rounded-lg transition-all text-base">Features</a>
+        <a href="#technicians" class="mobile-nav-link px-4 py-3.5 text-zinc-300 hover:text-white hover:bg-white/5 rounded-lg transition-all text-base">Technicians</a>
+        <a href="#estimators" class="mobile-nav-link px-4 py-3.5 text-zinc-300 hover:text-white hover:bg-white/5 rounded-lg transition-all text-base">Estimators</a>
+        <a href="#contact" class="mobile-nav-link px-4 py-3.5 text-zinc-300 hover:text-white hover:bg-white/5 rounded-lg transition-all text-base">Contact</a>
+        <hr class="border-white/10 my-3" />
+        <a href="#demo" class="mobile-nav-link px-4 py-3.5 text-center text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl">Start Quoting</a>
+      </div>
+    </div>
+  </header>
+
+
+  <!-- ===== HERO SECTION ===== -->
+  <section id="home" class="relative min-h-screen flex items-center pt-16 sm:pt-20 overflow-hidden">
+    <div class="absolute inset-0 hero-grid"></div>
+    <div class="absolute top-1/4 -left-32 w-72 sm:w-96 h-72 sm:h-96 bg-blue-500/10 rounded-full blur-[128px]"></div>
+    <div class="absolute bottom-1/4 -right-32 w-72 sm:w-96 h-72 sm:h-96 bg-blue-600/10 rounded-full blur-[128px]"></div>
+
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 lg:py-20">
+      <div class="grid md:grid-cols-2 gap-10 md:gap-16 items-center">
+        <!-- Content -->
+        <div class="text-center md:text-left">
+          <div class="reveal inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full glass text-[11px] sm:text-xs font-semibold text-blue-400 mb-5 sm:mb-6">
+            <span class="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></span>
+            AI-Powered Trade Quoting Platform
+          </div>
+
+          <h1 class="reveal text-4xl sm:text-5xl md:text-6xl xl:text-7xl font-extrabold leading-tight tracking-tight">
+            <span class="text-white">Snap. Speak.</span><br />
+            <span class="gradient-text">Quote.</span>
+          </h1>
+
+          <p class="reveal mt-5 sm:mt-6 text-base sm:text-lg md:text-xl text-zinc-400 max-w-xl mx-auto md:mx-0 leading-relaxed">
+            Contractors capture broken parts with photos and voice notes. Our AI identifies every component and generates accurate, itemized quotes — <strong class="text-zinc-200">in seconds, not hours</strong>.
+          </p>
+
+          <div class="reveal mt-7 sm:mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center md:justify-start">
+            <a href="#demo" id="hero-cta-primary" class="group inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 text-sm sm:text-base font-semibold text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl hover:from-blue-400 hover:to-blue-500 transition-all shadow-xl shadow-blue-500/25 hover:shadow-blue-500/40 hover:-translate-y-1 active:translate-y-0">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z" />
+              </svg>
+              Upload Photos
+              <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </a>
+            <a href="#how-it-works" id="hero-cta-secondary" class="group inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 text-sm sm:text-base font-semibold text-zinc-300 border border-zinc-700 hover:border-zinc-500 rounded-2xl hover:bg-white/5 transition-all hover:-translate-y-1 active:translate-y-0">
+              <svg class="w-5 h-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Watch Demo
+            </a>
+          </div>
+        </div>
+
+        <!-- Hero Image -->
+        <div class="reveal relative">
+          <div class="relative rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl shadow-blue-500/10 border border-white/10">
+            <img src="images/hero-technician.png" alt="Field technician using smartphone to capture a broken industrial pipe fitting" class="w-full h-auto object-cover" />
+            <div class="absolute inset-0 bg-gradient-to-t from-charcoal-950/60 via-transparent to-transparent"></div>
+          </div>
+          <div class="absolute -bottom-3 -left-3 sm:-bottom-5 sm:-left-5 glass-strong rounded-xl sm:rounded-2xl px-3 sm:px-4 py-2 sm:py-3 animate-float shadow-xl">
+            <div class="flex items-center gap-2">
+              <div class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></div>
+              <span class="text-xs sm:text-sm font-semibold text-white">AI Processing</span>
+            </div>
+            <div class="mt-0.5 text-[10px] sm:text-xs text-zinc-500">Identifying 3 components...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===== HOW IT WORKS ===== -->
+  <section id="how-it-works" class="relative py-16 sm:py-24 lg:py-32">
+    <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/20 to-transparent"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-3xl mx-auto mb-12 sm:mb-16 lg:mb-20">
+        <div class="reveal inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-xs font-semibold text-blue-400 mb-5 sm:mb-6">
+          Simple 3-Step Workflow
+        </div>
+        <h2 class="reveal text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight">
+          From Jobsite to Quote in <span class="gradient-text">Minutes</span>
+        </h2>
+        <p class="reveal mt-3 sm:mt-4 text-base sm:text-lg text-zinc-400">
+          No more scribbling part numbers on napkins. Our AI-powered pipeline handles it all.
+        </p>
+      </div>
+
+      <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-5 sm:gap-6 lg:gap-8">
+        <!-- Step 1 -->
+        <div class="reveal group relative">
+          <div class="glass-strong rounded-2xl sm:rounded-3xl p-6 sm:p-8 h-full glow-card transition-all duration-500 hover:-translate-y-2">
+            <div class="absolute -top-3 -left-1 sm:-top-4 sm:-left-2 w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-xs sm:text-sm shadow-lg shadow-blue-500/30">01</div>
+            <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-blue-500/10 flex items-center justify-center mb-5 sm:mb-6 group-hover:scale-110 transition-transform">
+              <svg class="w-7 h-7 sm:w-8 sm:h-8 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z" />
+              </svg>
+            </div>
+            <h3 class="text-lg sm:text-xl font-bold text-white mb-2 sm:mb-3">🔧 Capture</h3>
+            <p class="text-sm text-zinc-400 leading-relaxed">Snap photos of broken or worn parts directly from the jobsite. Even blurry, low-light shots work.</p>
+            <div class="mt-4 sm:mt-6 flex flex-wrap gap-2">
+              <span class="text-[10px] sm:text-xs px-2.5 sm:px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">Multi-angle</span>
+              <span class="text-[10px] sm:text-xs px-2.5 sm:px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">Low-light OK</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="reveal group relative" style="transition-delay: 0.15s;">
+          <div class="glass-strong rounded-2xl sm:rounded-3xl p-6 sm:p-8 h-full glow-card transition-all duration-500 hover:-translate-y-2">
+            <div class="absolute -top-3 -left-1 sm:-top-4 sm:-left-2 w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center text-white font-bold text-xs sm:text-sm shadow-lg shadow-orange-500/30">02</div>
+            <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-orange-500/10 flex items-center justify-center mb-5 sm:mb-6 group-hover:scale-110 transition-transform">
+              <svg class="w-7 h-7 sm:w-8 sm:h-8 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
+              </svg>
+            </div>
+            <h3 class="text-lg sm:text-xl font-bold text-white mb-2 sm:mb-3">🎙️ Describe</h3>
+            <p class="text-sm text-zinc-400 leading-relaxed">Record a quick voice memo. Our NLP transcribes and structures trade jargon instantly.</p>
+            <div class="mt-4 sm:mt-6 flex flex-wrap gap-2">
+              <span class="text-[10px] sm:text-xs px-2.5 sm:px-3 py-1 rounded-full bg-orange-500/10 text-orange-400 border border-orange-500/20">Hands-free</span>
+              <span class="text-[10px] sm:text-xs px-2.5 sm:px-3 py-1 rounded-full bg-orange-500/10 text-orange-400 border border-orange-500/20">Noise-tolerant</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="reveal group relative sm:col-span-2 md:col-span-1" style="transition-delay: 0.3s;">
+          <div class="glass-strong rounded-2xl sm:rounded-3xl p-6 sm:p-8 h-full glow-card transition-all duration-500 hover:-translate-y-2">
+            <div class="absolute -top-3 -left-1 sm:-top-4 sm:-left-2 w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-xs sm:text-sm shadow-lg shadow-emerald-500/30">03</div>
+            <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center mb-5 sm:mb-6 group-hover:scale-110 transition-transform">
+              <svg class="w-7 h-7 sm:w-8 sm:h-8 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z" />
+              </svg>
+            </div>
+            <h3 class="text-lg sm:text-xl font-bold text-white mb-2 sm:mb-3">📋 Quote</h3>
+            <p class="text-sm text-zinc-400 leading-relaxed">Receive a structured, itemized quote — parts, quantities, pricing, and labor. Ready for approval.</p>
+            <div class="mt-4 sm:mt-6 flex flex-wrap gap-2">
+              <span class="text-[10px] sm:text-xs px-2.5 sm:px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Auto-priced</span>
+              <span class="text-[10px] sm:text-xs px-2.5 sm:px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">PDF export</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===== AI TECHNOLOGY (Tailwind Typography) ===== -->
+  <section id="technology" class="relative py-16 sm:py-24 lg:py-32 overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-b from-charcoal-950 via-zinc-900/30 to-charcoal-950"></div>
+    <div class="absolute top-1/3 -right-48 w-[400px] sm:w-[500px] h-[400px] sm:h-[500px] bg-blue-500/5 rounded-full blur-[160px]"></div>
+
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid lg:grid-cols-2 gap-10 lg:gap-20 items-center">
+        <!-- Image -->
+        <div class="reveal relative order-2 lg:order-1">
+          <div class="relative rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl shadow-blue-500/10 border border-white/10">
+            <img src="images/cv-analysis.png" alt="AI computer vision analyzing damaged industrial valve with bounding boxes" class="w-full h-auto object-cover" />
+            <div class="absolute inset-0 bg-gradient-to-t from-charcoal-950/50 to-transparent"></div>
+          </div>
+          <div class="absolute top-4 right-4 sm:top-6 sm:right-6 glass-strong rounded-lg sm:rounded-xl px-3 sm:px-4 py-2 animate-float">
+            <div class="text-[10px] sm:text-xs text-zinc-400">Detection Confidence</div>
+            <div class="flex items-center gap-2 mt-1">
+              <div class="flex-1 h-1.5 sm:h-2 bg-zinc-700 rounded-full overflow-hidden">
+                <div class="h-full w-[96%] bg-gradient-to-r from-blue-500 to-emerald-400 rounded-full"></div>
+              </div>
+              <span class="text-xs sm:text-sm font-bold text-emerald-400">96%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Prose Content -->
+        <div class="order-1 lg:order-2">
+          <div class="reveal inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-xs font-semibold text-blue-400 mb-5 sm:mb-6">
+            Dual AI Engine
+          </div>
+
+          <article class="reveal prose prose-base sm:prose-lg prose-invert max-w-none prose-custom">
+            <h2 class="!text-2xl sm:!text-3xl lg:!text-4xl !font-extrabold !tracking-tight">
+              How <strong>YOLO</strong> Identifies Your Parts
+            </h2>
+            <p>
+              Our computer vision pipeline is built on <strong>YOLOv8</strong>, fine-tuned on over <strong>500,000 labeled images</strong> of industrial hardware — valves, fittings, fasteners, pipes, and electrical components.
+            </p>
+            <p>
+              Our <strong>serverless NLP pipeline</strong> converts voice memos into structured data: <strong>part names</strong>, <strong>specifications</strong>, <strong>quantities</strong>, and <strong>condition assessments</strong>. The two engines cross-reference each other for <strong>complete, accurate quotes</strong>.
+            </p>
+          </article>
+
+          <div class="reveal mt-6 sm:mt-8 grid grid-cols-2 gap-3 sm:gap-4">
+            <div class="glass rounded-xl sm:rounded-2xl p-3 sm:p-4 group hover:border-blue-500/30 transition-colors">
+              <div class="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
+                <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                  <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                </div>
+                <span class="text-xs sm:text-sm font-semibold text-white">Computer Vision</span>
+              </div>
+              <p class="text-[10px] sm:text-xs text-zinc-500">YOLOv8 • Real-time • Multi-class</p>
+            </div>
+            <div class="glass rounded-xl sm:rounded-2xl p-3 sm:p-4 group hover:border-orange-500/30 transition-colors">
+              <div class="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
+                <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-orange-500/10 flex items-center justify-center">
+                  <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" /></svg>
+                </div>
+                <span class="text-xs sm:text-sm font-semibold text-white">NLP Engine</span>
+              </div>
+              <p class="text-[10px] sm:text-xs text-zinc-500">Whisper STT • Trade jargon</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===== FEATURES GRID ===== -->
+  <section id="features" class="relative py-16 sm:py-24 lg:py-32">
+    <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-zinc-700/50 to-transparent"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
+        <div class="reveal inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-xs font-semibold text-orange-400 mb-5 sm:mb-6">
+          Platform Capabilities
+        </div>
+        <h2 class="reveal text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight">
+          Everything You Need to <span class="gradient-text-orange">Quote Faster</span>
+        </h2>
+        <p class="reveal mt-3 sm:mt-4 text-base sm:text-lg text-zinc-400">
+          Purpose-built features that eliminate every bottleneck between the jobsite and the final bid.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
+        <!-- Feature 1 -->
+        <div class="reveal glass-strong rounded-2xl sm:rounded-3xl p-5 sm:p-7 glow-card transition-all duration-500 hover:-translate-y-1 group">
+          <div class="w-11 h-11 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 flex items-center justify-center mb-4 sm:mb-5 group-hover:scale-110 transition-transform">
+            <svg class="w-5 h-5 sm:w-7 sm:h-7 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" /></svg>
+          </div>
+          <h3 class="text-sm sm:text-lg font-bold text-white mb-1.5 sm:mb-2">Voice-to-Text</h3>
+          <p class="text-xs sm:text-sm text-zinc-400 leading-relaxed">Trade jargon, part abbreviations, and field shorthand — 98% accuracy.</p>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="reveal glass-strong rounded-2xl sm:rounded-3xl p-5 sm:p-7 glow-card transition-all duration-500 hover:-translate-y-1 group" style="transition-delay:0.08s">
+          <div class="w-11 h-11 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-orange-500/20 to-amber-600/20 flex items-center justify-center mb-4 sm:mb-5 group-hover:scale-110 transition-transform">
+            <svg class="w-5 h-5 sm:w-7 sm:h-7 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+          </div>
+          <h3 class="text-sm sm:text-lg font-bold text-white mb-1.5 sm:mb-2">Part Recognition</h3>
+          <p class="text-xs sm:text-sm text-zinc-400 leading-relaxed">2,500+ hardware components identified — even corroded or hidden parts.</p>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="reveal glass-strong rounded-2xl sm:rounded-3xl p-5 sm:p-7 glow-card transition-all duration-500 hover:-translate-y-1 group" style="transition-delay:0.16s">
+          <div class="w-11 h-11 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-600/20 flex items-center justify-center mb-4 sm:mb-5 group-hover:scale-110 transition-transform">
+            <svg class="w-5 h-5 sm:w-7 sm:h-7 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          </div>
+          <h3 class="text-sm sm:text-lg font-bold text-white mb-1.5 sm:mb-2">Auto-Pricing</h3>
+          <p class="text-xs sm:text-sm text-zinc-400 leading-relaxed">Real-time pricing from supplier catalogs with automatic markup rules.</p>
+        </div>
+
+        <!-- Feature 4 -->
+        <div class="reveal glass-strong rounded-2xl sm:rounded-3xl p-5 sm:p-7 glow-card transition-all duration-500 hover:-translate-y-1 group" style="transition-delay:0.08s">
+          <div class="w-11 h-11 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-600/20 flex items-center justify-center mb-4 sm:mb-5 group-hover:scale-110 transition-transform">
+            <svg class="w-5 h-5 sm:w-7 sm:h-7 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
+          </div>
+          <h3 class="text-sm sm:text-lg font-bold text-white mb-1.5 sm:mb-2">Smart Templates</h3>
+          <p class="text-xs sm:text-sm text-zinc-400 leading-relaxed">AI suggests optimized templates for HVAC, plumbing, electrical, and more.</p>
+        </div>
+
+        <!-- Feature 5 -->
+        <div class="reveal glass-strong rounded-2xl sm:rounded-3xl p-5 sm:p-7 glow-card transition-all duration-500 hover:-translate-y-1 group" style="transition-delay:0.16s">
+          <div class="w-11 h-11 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-rose-500/20 to-pink-600/20 flex items-center justify-center mb-4 sm:mb-5 group-hover:scale-110 transition-transform">
+            <svg class="w-5 h-5 sm:w-7 sm:h-7 text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" /></svg>
+          </div>
+          <h3 class="text-sm sm:text-lg font-bold text-white mb-1.5 sm:mb-2">Real-Time Sync</h3>
+          <p class="text-xs sm:text-sm text-zinc-400 leading-relaxed">Field uploads instantly appear on the estimator's dashboard. No waiting.</p>
+        </div>
+
+        <!-- Feature 6 -->
+        <div class="reveal glass-strong rounded-2xl sm:rounded-3xl p-5 sm:p-7 glow-card transition-all duration-500 hover:-translate-y-1 group" style="transition-delay:0.24s">
+          <div class="w-11 h-11 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-sky-500/20 to-blue-600/20 flex items-center justify-center mb-4 sm:mb-5 group-hover:scale-110 transition-transform">
+            <svg class="w-5 h-5 sm:w-7 sm:h-7 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>
+          </div>
+          <h3 class="text-sm sm:text-lg font-bold text-white mb-1.5 sm:mb-2">Role-Based Access</h3>
+          <p class="text-xs sm:text-sm text-zinc-400 leading-relaxed">Technicians upload, estimators approve, managers get audit trails.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===== FOR TECHNICIANS ===== -->
+  <section id="technicians" class="relative py-16 sm:py-24 lg:py-32 overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-b from-charcoal-950 via-zinc-900/20 to-charcoal-950"></div>
+    <div class="absolute top-1/3 -left-48 w-[400px] h-[400px] bg-orange-500/5 rounded-full blur-[160px]"></div>
+
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid lg:grid-cols-2 gap-10 lg:gap-20 items-center">
+        <!-- Content -->
+        <div>
+          <div class="reveal inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-xs font-semibold text-orange-400 mb-5 sm:mb-6">
+            Built for Field Crews
+          </div>
+          <h2 class="reveal text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight">
+            Dirty Hands? <br /><span class="gradient-text-orange">No Problem.</span>
+          </h2>
+          <article class="reveal prose prose-base sm:prose-lg prose-invert max-w-none mt-5 sm:mt-6 prose-custom">
+            <p>Field technicians work in crawl spaces, on rooftops, and under boilers — places where typing is impossible. <strong>BluCollr</strong> is designed for this reality.</p>
+          </article>
+
+          <div class="reveal mt-6 sm:mt-8 space-y-3 sm:space-y-4">
+            <div class="flex items-start gap-3 sm:gap-4 glass rounded-xl sm:rounded-2xl p-3.5 sm:p-4 hover:border-orange-500/30 transition-colors">
+              <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-orange-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" /></svg>
+              </div>
+              <div>
+                <h4 class="text-sm sm:text-base text-white font-semibold">One-Tap Photo Capture</h4>
+                <p class="text-xs sm:text-sm text-zinc-400 mt-0.5 sm:mt-1">Large touch targets designed for gloved hands. No fiddly menus.</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3 sm:gap-4 glass rounded-xl sm:rounded-2xl p-3.5 sm:p-4 hover:border-orange-500/30 transition-colors">
+              <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-orange-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" /></svg>
+              </div>
+              <div>
+                <h4 class="text-sm sm:text-base text-white font-semibold">Press-and-Hold Voice Memo</h4>
+                <p class="text-xs sm:text-sm text-zinc-400 mt-0.5 sm:mt-1">Works through compressors, generators, and shop fans.</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3 sm:gap-4 glass rounded-xl sm:rounded-2xl p-3.5 sm:p-4 hover:border-orange-500/30 transition-colors">
+              <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-orange-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3l8.735 8.735m0 0a.374.374 0 11.53.53m-.53-.53l.53.53m0 0L21 21M14.652 9.348a3.75 3.75 0 010 5.304m2.121-7.425a6.75 6.75 0 010 9.546m2.121-11.667c3.808 3.807 3.808 9.98 0 13.788" /></svg>
+              </div>
+              <div>
+                <h4 class="text-sm sm:text-base text-white font-semibold">Offline Mode</h4>
+                <p class="text-xs sm:text-sm text-zinc-400 mt-0.5 sm:mt-1">Capture everything offline — syncs when connectivity returns.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Image -->
+        <div class="reveal relative">
+          <div class="relative rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl shadow-orange-500/10 border border-white/10">
+            <img src="images/hero-technician.png" alt="Field technician using BluCollr app on the jobsite" class="w-full h-auto object-cover" />
+            <div class="absolute inset-0 bg-gradient-to-t from-charcoal-950/60 via-transparent to-transparent"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===== FOR ESTIMATORS ===== -->
+  <section id="estimators" class="relative py-16 sm:py-24 lg:py-32 overflow-hidden">
+    <div class="absolute top-1/3 -right-48 w-[400px] h-[400px] bg-emerald-500/5 rounded-full blur-[160px]"></div>
+
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid lg:grid-cols-2 gap-10 lg:gap-20 items-center">
+        <!-- Image -->
+        <div class="reveal relative order-2 lg:order-1">
+          <div class="relative rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl shadow-emerald-500/10 border border-white/10">
+            <img src="images/estimator-office.png" alt="Office estimator reviewing auto-generated quotes on dashboard" class="w-full h-auto object-cover" />
+            <div class="absolute inset-0 bg-gradient-to-t from-charcoal-950/60 via-transparent to-transparent"></div>
+          </div>
+        </div>
+
+        <!-- Content -->
+        <div class="order-1 lg:order-2">
+          <div class="reveal inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-xs font-semibold text-emerald-400 mb-5 sm:mb-6">
+            Built for the Back Office
+          </div>
+          <h2 class="reveal text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight">
+            From Chaos to <br /><span class="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">Clarity.</span>
+          </h2>
+          <article class="reveal prose prose-base sm:prose-lg prose-invert max-w-none mt-5 sm:mt-6 prose-custom">
+            <p>Estimators spend hours deciphering scrawled notes and blurry photos. <strong>BluCollr</strong> translates messy field inputs into structured, accurate data instantly — so your team can focus on <strong>winning bids</strong>.</p>
+          </article>
+
+          <div class="reveal mt-6 sm:mt-8 space-y-3 sm:space-y-4">
+            <div class="flex items-start gap-3 sm:gap-4 glass rounded-xl sm:rounded-2xl p-3.5 sm:p-4 hover:border-emerald-500/30 transition-colors">
+              <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-emerald-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-7.5A1.125 1.125 0 0112 18.375m9.75-12.75c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125m19.5 0v1.5c0 .621-.504 1.125-1.125 1.125M2.25 5.625v1.5c0 .621.504 1.125 1.125 1.125m0 0h17.25m-17.25 0h7.5c.621 0 1.125.504 1.125 1.125M3.375 8.25c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125m17.25-3.75h-7.5c-.621 0-1.125.504-1.125 1.125m8.625-1.125c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h7.5m-7.5 0c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125M12 10.875v-1.5m0 1.5c0 .621-.504 1.125-1.125 1.125M12 10.875c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125M13.125 12h7.5m-7.5 0c-.621 0-1.125.504-1.125 1.125M20.625 12c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h7.5M12 14.625v-1.5m0 1.5c0 .621-.504 1.125-1.125 1.125M12 14.625c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125m0 0v1.5c0 .621-.504 1.125-1.125 1.125M12 18.375c0-.621-.504-1.125-1.125-1.125M12 18.375c0-.621.504-1.125 1.125-1.125" /></svg>
+              </div>
+              <div>
+                <h4 class="text-sm sm:text-base text-white font-semibold">Structured Data, Instantly</h4>
+                <p class="text-xs sm:text-sm text-zinc-400 mt-0.5 sm:mt-1">Clean tabular data — part name, spec, quantity, condition, and suggested price.</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3 sm:gap-4 glass rounded-xl sm:rounded-2xl p-3.5 sm:p-4 hover:border-emerald-500/30 transition-colors">
+              <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-emerald-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              </div>
+              <div>
+                <h4 class="text-sm sm:text-base text-white font-semibold">One-Click Approval</h4>
+                <p class="text-xs sm:text-sm text-zinc-400 mt-0.5 sm:mt-1">Review, adjust, and approve. Approved quotes auto-convert to work orders.</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3 sm:gap-4 glass rounded-xl sm:rounded-2xl p-3.5 sm:p-4 hover:border-emerald-500/30 transition-colors">
+              <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-emerald-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" /><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" /></svg>
+              </div>
+              <div>
+                <h4 class="text-sm sm:text-base text-white font-semibold">Analytics Dashboard</h4>
+                <p class="text-xs sm:text-sm text-zinc-400 mt-0.5 sm:mt-1">Track quote-to-close ratios, ticket sizes, and team performance.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===== LIVE DEMO ===== -->
+  <section id="demo" class="relative py-16 sm:py-24 lg:py-32 overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-b from-charcoal-950 via-zinc-900/30 to-charcoal-950"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-[200px]"></div>
+
+    <div class="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-3xl mx-auto mb-10 sm:mb-16">
+        <div class="reveal inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-xs font-semibold text-blue-400 mb-5 sm:mb-6">
+          <div class="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+          Live Preview
+        </div>
+        <h2 class="reveal text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight">
+          See It <span class="gradient-text">In Action</span>
+        </h2>
+        <p class="reveal mt-3 sm:mt-4 text-base sm:text-lg text-zinc-400">
+          Watch how a photo and voice memo becomes a structured, priced quote.
+        </p>
+      </div>
+
+      <!-- Demo Container -->
+      <div class="reveal glass-strong rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl shadow-blue-500/10 animate-pulse-glow">
+        <!-- Browser Bar -->
+        <div class="flex items-center gap-3 px-4 sm:px-6 py-3 sm:py-4 border-b border-white/10 bg-white/[0.02]">
+          <div class="flex gap-1.5 sm:gap-2">
+            <div class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-red-500/60"></div>
+            <div class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-amber-500/60"></div>
+            <div class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-emerald-500/60"></div>
+          </div>
+          <div class="flex-1 text-center">
+            <span class="text-[10px] sm:text-xs text-zinc-500 font-mono">blucollr.ai/dashboard</span>
+          </div>
+          <div class="w-10 sm:w-12"></div>
+        </div>
+
+        <div class="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-white/10">
+          <!-- Input Panel -->
+          <div class="p-4 sm:p-6 lg:p-8">
+            <h3 class="text-xs sm:text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3 sm:mb-4">Field Input</h3>
+
+            <div class="relative rounded-xl sm:rounded-2xl overflow-hidden mb-4 sm:mb-5 border border-white/10">
+              <img src="images/cv-analysis.png" alt="AI analyzing broken valve components" class="w-full h-36 sm:h-48 object-cover" />
+              <div id="demo-bbox-1" class="bbox absolute top-[15%] left-[10%] w-[35%] h-[45%] border-2 border-blue-400 rounded-lg">
+                <span class="absolute -top-5 left-0 bg-blue-500 text-white text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded">Gate Valve 2"</span>
+              </div>
+              <div id="demo-bbox-2" class="bbox absolute top-[25%] right-[15%] w-[25%] h-[35%] border-2 border-orange-400 rounded-lg" style="animation-delay:0.6s">
+                <span class="absolute -top-5 left-0 bg-orange-500 text-white text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded">Brass Coupling</span>
+              </div>
+              <div id="demo-bbox-3" class="bbox absolute bottom-[15%] left-[30%] w-[40%] h-[25%] border-2 border-emerald-400 rounded-lg" style="animation-delay:1.2s">
+                <span class="absolute -top-5 left-0 bg-emerald-500 text-white text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded">Copper Pipe 1.5"</span>
+              </div>
+            </div>
+
+            <div class="glass rounded-lg sm:rounded-xl p-3 sm:p-4">
+              <div class="flex items-center gap-2 mb-2 sm:mb-3">
+                <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-orange-500/10 flex items-center justify-center">
+                  <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" /></svg>
+                </div>
+                <span class="text-[10px] sm:text-xs font-semibold text-white">Voice Transcription</span>
+              </div>
+              <div class="text-xs sm:text-sm text-zinc-300 font-mono leading-relaxed" id="demo-transcript">
+                <span class="text-zinc-600">|</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Output Panel -->
+          <div class="p-4 sm:p-6 lg:p-8">
+            <div class="flex items-center justify-between mb-3 sm:mb-4">
+              <h3 class="text-xs sm:text-sm font-semibold text-zinc-400 uppercase tracking-wider">Generated Quote</h3>
+              <span id="demo-status" class="text-[9px] sm:text-[10px] font-semibold px-2.5 sm:px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">Processing...</span>
+            </div>
+
+            <div class="overflow-x-auto rounded-lg sm:rounded-xl border border-white/10 -mx-1 sm:mx-0">
+              <table class="w-full text-xs sm:text-sm min-w-[280px]">
+                <thead>
+                  <tr class="bg-white/[0.03]">
+                    <th class="text-left py-2.5 sm:py-3 px-3 sm:px-4 text-[10px] sm:text-xs font-semibold text-zinc-400 uppercase">Part</th>
+                    <th class="text-center py-2.5 sm:py-3 px-2 sm:px-4 text-[10px] sm:text-xs font-semibold text-zinc-400 uppercase">Qty</th>
+                    <th class="text-right py-2.5 sm:py-3 px-3 sm:px-4 text-[10px] sm:text-xs font-semibold text-zinc-400 uppercase">Price</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5">
+                  <tr class="quote-row" id="qr-1">
+                    <td class="py-2.5 sm:py-3 px-3 sm:px-4">
+                      <div class="text-white font-medium text-xs sm:text-sm">Gate Valve, Brass, 2"</div>
+                      <div class="text-[10px] text-zinc-600 hidden sm:block">SKU: GV-BR-200</div>
+                    </td>
+                    <td class="py-2.5 sm:py-3 px-2 sm:px-4 text-center text-zinc-300">1</td>
+                    <td class="py-2.5 sm:py-3 px-3 sm:px-4 text-right text-blue-400 font-semibold">₹2,500</td>
+                  </tr>
+                  <tr class="quote-row" id="qr-2">
+                    <td class="py-2.5 sm:py-3 px-3 sm:px-4">
+                      <div class="text-white font-medium text-xs sm:text-sm">Brass Coupling, 2"</div>
+                      <div class="text-[10px] text-zinc-600 hidden sm:block">SKU: CP-BR-200</div>
+                    </td>
+                    <td class="py-2.5 sm:py-3 px-2 sm:px-4 text-center text-zinc-300">2</td>
+                    <td class="py-2.5 sm:py-3 px-3 sm:px-4 text-right text-blue-400 font-semibold">₹850</td>
+                  </tr>
+                  <tr class="quote-row" id="qr-3">
+                    <td class="py-2.5 sm:py-3 px-3 sm:px-4">
+                      <div class="text-white font-medium text-xs sm:text-sm">Copper Pipe, 1.5"</div>
+                      <div class="text-[10px] text-zinc-600 hidden sm:block">SKU: PP-CU-150-L</div>
+                    </td>
+                    <td class="py-2.5 sm:py-3 px-2 sm:px-4 text-center text-zinc-300">6 ft</td>
+                    <td class="py-2.5 sm:py-3 px-3 sm:px-4 text-right text-blue-400 font-semibold">₹1,200</td>
+                  </tr>
+                  <tr class="quote-row" id="qr-4">
+                    <td class="py-2.5 sm:py-3 px-3 sm:px-4">
+                      <div class="text-white font-medium text-xs sm:text-sm">Labor — Valve Replace</div>
+                      <div class="text-[10px] text-zinc-600 hidden sm:block">1.5 hrs @ ₹1,500/hr</div>
+                    </td>
+                    <td class="py-2.5 sm:py-3 px-2 sm:px-4 text-center text-zinc-300">1.5h</td>
+                    <td class="py-2.5 sm:py-3 px-3 sm:px-4 text-right text-blue-400 font-semibold">₹2,250</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div id="demo-total" class="mt-3 sm:mt-4 glass rounded-lg sm:rounded-xl p-3 sm:p-4 flex items-center justify-between opacity-0 transition-opacity duration-700">
+              <div>
+                <div class="text-[10px] sm:text-xs text-zinc-400">Estimated Total</div>
+                <div class="text-xl sm:text-2xl font-bold text-white">₹6,800</div>
+              </div>
+              <button class="px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg sm:rounded-xl hover:from-emerald-400 hover:to-teal-500 transition-all shadow-lg shadow-emerald-500/25 active:translate-y-0">
+                Approve Quote
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===== CTA BANNER ===== -->
+  <section id="contact" class="relative py-16 sm:py-24 lg:py-32 overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-r from-blue-600/15 via-blue-600/15 to-blue-600/15"></div>
+    <div class="absolute inset-0 hero-grid opacity-40"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[180px]"></div>
+
+    <div class="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <div class="reveal">
+        <h2 class="text-2xl sm:text-3xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight">
+          Ready to Transform Your<br /><span class="gradient-text">Quoting Workflow?</span>
+        </h2>
+        <p class="mt-4 sm:mt-6 text-base sm:text-lg text-zinc-300 max-w-2xl mx-auto">
+          Join hundreds of trade contractors who've eliminated hours of manual quoting.
+        </p>
+
+        <form id="cta-form" class="mt-8 sm:mt-10 flex flex-col sm:flex-row gap-3 sm:gap-4 max-w-xl mx-auto" onsubmit="event.preventDefault(); handleCTASubmit();">
+          <div class="flex-1">
+            <input type="email" id="cta-email" placeholder="Enter your work email" required
+              class="w-full px-5 sm:px-6 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl bg-white/10 border border-white/20 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base backdrop-blur-sm" />
+          </div>
+          <button type="submit" id="cta-submit"
+            class="px-6 sm:px-8 py-3.5 sm:py-4 text-sm sm:text-base font-semibold text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl sm:rounded-2xl hover:from-blue-400 hover:to-blue-500 transition-all shadow-xl shadow-blue-500/25 hover:shadow-blue-500/40 hover:-translate-y-0.5 active:translate-y-0 whitespace-nowrap">
+            Get Early Access
+          </button>
+        </form>
+
+        <p class="mt-3 sm:mt-4 text-xs sm:text-sm text-zinc-500">
+          Free during beta • No credit card required
+        </p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="relative border-t border-white/10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8 lg:gap-12">
+        <!-- Brand -->
+        <div class="col-span-2 sm:col-span-1">
+          <a href="#home" class="flex items-center gap-2.5 mb-3 sm:mb-4">
+            <img src="images/logo.png" alt="BluCollr Logo" class="w-9 h-9 rounded-xl shadow-lg shadow-blue-500/20 object-cover" />
+            <span class="text-lg font-bold text-white">Blu<span class="gradient-text">Collr</span></span>
+          </a>
+          <p class="text-xs sm:text-sm text-zinc-500 leading-relaxed max-w-xs mb-4 sm:mb-6">
+            AI-powered quoting for blue-collar trades. Jobsite to quote in minutes.
+          </p>
+          <div class="flex gap-2.5 sm:gap-3">
+            <a href="#" class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl glass flex items-center justify-center text-zinc-500 hover:text-blue-400 hover:border-blue-500/30 transition-all" aria-label="Twitter / X">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
+            </a>
+            <a href="#" class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl glass flex items-center justify-center text-zinc-500 hover:text-blue-400 hover:border-blue-500/30 transition-all" aria-label="LinkedIn">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" /></svg>
+            </a>
+            <a href="#" class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl glass flex items-center justify-center text-zinc-500 hover:text-blue-400 hover:border-blue-500/30 transition-all" aria-label="YouTube">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814z" /><polygon fill="#111118" points="9.545,15.568 15.818,12 9.545,8.432" /></svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Product -->
+        <div>
+          <h4 class="text-xs sm:text-sm font-semibold text-white uppercase tracking-wider mb-3 sm:mb-4">Product</h4>
+          <ul class="space-y-2 sm:space-y-3">
+            <li><a href="#features" class="text-xs sm:text-sm text-zinc-500 hover:text-blue-400 transition-colors">Features</a></li>
+            <li><a href="#demo" class="text-xs sm:text-sm text-zinc-500 hover:text-blue-400 transition-colors">Live Demo</a></li>
+            <li><a href="#" class="text-xs sm:text-sm text-zinc-500 hover:text-blue-400 transition-colors">Pricing</a></li>
+            <li><a href="#" class="text-xs sm:text-sm text-zinc-500 hover:text-blue-400 transition-colors">API Docs</a></li>
+          </ul>
+        </div>
+
+        <!-- Resources -->
+        <div>
+          <h4 class="text-xs sm:text-sm font-semibold text-white uppercase tracking-wider mb-3 sm:mb-4">Resources</h4>
+          <ul class="space-y-2 sm:space-y-3">
+            <li><a href="#" class="text-xs sm:text-sm text-zinc-500 hover:text-blue-400 transition-colors">Blog</a></li>
+            <li><a href="#" class="text-xs sm:text-sm text-zinc-500 hover:text-blue-400 transition-colors">Help Center</a></li>
+            <li><a href="#" class="text-xs sm:text-sm text-zinc-500 hover:text-blue-400 transition-colors">Case Studies</a></li>
+          </ul>
+        </div>
+
+        <!-- Company -->
+        <div>
+          <h4 class="text-xs sm:text-sm font-semibold text-white uppercase tracking-wider mb-3 sm:mb-4">Company</h4>
+          <ul class="space-y-2 sm:space-y-3">
+            <li><a href="#" class="text-xs sm:text-sm text-zinc-500 hover:text-blue-400 transition-colors">About</a></li>
+            <li><a href="#contact" class="text-xs sm:text-sm text-zinc-500 hover:text-blue-400 transition-colors">Contact</a></li>
+            <li><a href="#" class="text-xs sm:text-sm text-zinc-500 hover:text-blue-400 transition-colors">Privacy</a></li>
+            <li><a href="#" class="text-xs sm:text-sm text-zinc-500 hover:text-blue-400 transition-colors">Terms</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
+        <p class="text-xs sm:text-sm text-zinc-600">&copy; 2026 BluCollr. All rights reserved.</p>
+        <div class="flex items-center gap-4 sm:gap-6">
+          <a href="#" class="text-xs sm:text-sm text-zinc-600 hover:text-zinc-400 transition-colors">Privacy</a>
+          <a href="#" class="text-xs sm:text-sm text-zinc-600 hover:text-zinc-400 transition-colors">Terms</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+
+  <!-- ===== JAVASCRIPT ===== -->
+  <script>
+    // 1. Sticky Header
+    const header = document.getElementById('header');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 50) {
+        header.classList.add('glass');
+        header.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+      } else {
+        header.classList.remove('glass');
+        header.style.borderBottom = 'none';
+      }
+    });
+
+    // 2. Mobile Menu
+    const mobileBtn = document.getElementById('mobile-menu-btn');
+    const mobileClose = document.getElementById('mobile-menu-close');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const mobileOverlay = document.getElementById('mobile-overlay');
+    const mobileLinks = document.querySelectorAll('.mobile-nav-link');
+
+    function openMenu() {
+      mobileMenu.classList.add('open');
+      mobileOverlay.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeMenu() {
+      mobileMenu.classList.remove('open');
+      mobileOverlay.classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+    mobileBtn.addEventListener('click', openMenu);
+    mobileClose.addEventListener('click', closeMenu);
+    mobileOverlay.addEventListener('click', closeMenu);
+    mobileLinks.forEach(link => link.addEventListener('click', closeMenu));
+
+    // 3. Scroll Reveal
+    const revealElements = document.querySelectorAll('.reveal');
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('active');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    revealElements.forEach(el => revealObserver.observe(el));
+
+    // 4. Stat Counters
+    const counters = document.querySelectorAll('.stat-counter');
+    const counterObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const el = entry.target;
+          const target = parseInt(el.getAttribute('data-target'));
+          const suffix = el.getAttribute('data-suffix') || '';
+          const duration = 2000;
+          const increment = target / (duration / 16);
+          let current = 0;
+          const timer = setInterval(() => {
+            current += increment;
+            if (current >= target) { current = target; clearInterval(timer); }
+            el.textContent = Math.floor(current).toLocaleString() + suffix;
+          }, 16);
+          counterObserver.unobserve(el);
+        }
+      });
+    }, { threshold: 0.5 });
+    counters.forEach(c => counterObserver.observe(c));
+
+    // 5. Demo Animations
+    const transcriptText = "Two-inch brass gate valve, corroded badly. Needs full replacement plus two new couplings and about six feet of copper pipe.";
+    const transcriptEl = document.getElementById('demo-transcript');
+    const statusEl = document.getElementById('demo-status');
+    const totalEl = document.getElementById('demo-total');
+    let demoTriggered = false;
+
+    function runDemo() {
+      if (demoTriggered) return;
+      demoTriggered = true;
+      document.querySelectorAll('.bbox').forEach((bbox, i) => {
+        setTimeout(() => bbox.classList.add('visible'), i * 600);
+      });
+      let charIndex = 0;
+      const typeInterval = setInterval(() => {
+        if (charIndex < transcriptText.length) {
+          transcriptEl.textContent = transcriptText.substring(0, charIndex + 1);
+          charIndex++;
+        } else {
+          clearInterval(typeInterval);
+          transcriptEl.innerHTML = transcriptText + '<span class="text-emerald-400 ml-1">✓</span>';
+          showQuoteRows();
+        }
+      }, 35);
+    }
+
+    function showQuoteRows() {
+      const rows = document.querySelectorAll('.quote-row');
+      rows.forEach((row, i) => { setTimeout(() => row.classList.add('visible'), i * 300); });
+      setTimeout(() => {
+        statusEl.textContent = '✓ Complete';
+        statusEl.classList.remove('bg-blue-500/10', 'text-blue-400', 'border-blue-500/20');
+        statusEl.classList.add('bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/20');
+        totalEl.style.opacity = '1';
+      }, rows.length * 300 + 500);
+    }
+
+    const demoObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          setTimeout(runDemo, 600);
+          demoObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.2 });
+    demoObserver.observe(document.getElementById('demo'));
+
+    // 6. CTA Form
+    function handleCTASubmit() {
+      const btn = document.getElementById('cta-submit');
+      btn.textContent = '✓ You\'re In!';
+      btn.classList.remove('from-blue-500', 'to-blue-600');
+      btn.classList.add('from-emerald-500', 'to-teal-600');
+      document.getElementById('cta-email').value = '';
+      setTimeout(() => {
+        btn.textContent = 'Get Early Access';
+        btn.classList.remove('from-emerald-500', 'to-teal-600');
+        btn.classList.add('from-blue-500', 'to-blue-600');
+      }, 3000);
+    }
+
+    // 7. Active Nav Highlighting
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-link');
+    const navObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.id;
+          navLinks.forEach(link => {
+            link.classList.remove('text-blue-400');
+            if (link.getAttribute('href') === '#' + id) link.classList.add('text-blue-400');
+          });
+        }
+      });
+    }, { threshold: 0.3, rootMargin: '-80px 0px -50% 0px' });
+    sections.forEach(s => navObserver.observe(s));
+  </script>
+
+</body>
+</html>
